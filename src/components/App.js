@@ -3,7 +3,7 @@ import Plane from '../classes/Plane';
 import Boat from '../classes/Boat';
 import Parachutist from '../classes/Parachutist';
 import Player from '../classes/Player';
-import { SECOND } from './constants';
+import { MAX_SCREEN_X, MIN_SCREEN_X, SEA_HEIGHT, SECOND } from './constants';
 import '../style/index.scss';
 
 class App extends Component {
@@ -29,16 +29,16 @@ class App extends Component {
             width: 300,
             height: 150
         };
+
+        this.screenX = MAX_SCREEN_X;
     }
 
     componentDidMount() {
-        if(this.canvas.current){
-            this.context = this.canvas.current.getContext('2d');
+        this.context = this.canvas.current.getContext('2d');
 
-            this.boat = new Boat();
-            this.player = new Player();
-            this.parachutists = [];
-        }
+        this.boat = new Boat();
+        this.player = new Player();
+        this.parachutists = [];
 
         this.intervals = [
             setInterval(this.renderCanvas, SECOND * 0.1),
@@ -50,8 +50,20 @@ class App extends Component {
             this.gameOver();
         }, SECOND * 60 * 60);
 
-        window.addEventListener('keydown', ({ keyCode }) => this.boat.handleKeys(keyCode));
+        window.addEventListener('keydown', this.onKeyDown);
+        window.addEventListener('mousemove', this.onMouseOver);
     }
+
+    onMouseOver = ({ screenX }) => {
+        if(screenX < MAX_SCREEN_X && screenX > MIN_SCREEN_X){
+            const difference = screenX - this.screenX;
+            this.screenX = screenX;
+
+            this.boat.mouseMove(difference / 3.5);
+        }
+    };
+
+    onKeyDown = ({ keyCode }) => this.boat.handleKeys(keyCode);
 
     renderCanvas = () => {
         this.loadImage(this.sky);
@@ -68,47 +80,50 @@ class App extends Component {
     renderPlaneRound = () => {
         const plane = new Plane();
 
-        const renderPlaneInterval = setInterval(() => {
-            this.intervals = [
-                ...this.intervals,
-                renderPlaneInterval
-            ];
-
+        const interval = setInterval(() => {
             if(!plane.isFinished()){
                 plane.render(this.loadImage);
 
-                if(!plane.isDroppedParachutist() && Math.round(plane.getParachutistOffsetFromLeft()) === Math.round(plane.offsetFromLeft)) {
-                    const parachutist = new Parachutist(plane.offsetFromLeft);
+                if(Math.round(plane.getParachutistOffsetFromLeft()) === Math.round(plane.getOffsetFromLeft())) {
+                    const parachutist = new Parachutist(plane.getOffsetFromLeft());
 
                     this.parachutists = [
                         ...this.parachutists,
                         parachutist
                     ];
                 }
-            } else {
-                clearInterval(renderPlaneInterval);
             }
         }, 50);
+
+        this.intervals = [
+            ...this.intervals,
+            interval
+        ];
+
+        if(plane.isFinished()){
+            clearInterval(interval);
+        }
     };
 
     renderParachutists = () => {
         this.parachutists.forEach((parachutist) => {
             const interval = setInterval(() => {
-                this.intervals = [
-                    ...this.intervals,
-                    interval
-                ];
+                parachutist.render(this.loadImage);
 
-                parachutist.render(this.context, this.loadImage);
-
-                if(parachutist.isParachute() && Math.round(parachutist.getOffsetFromTop()) === 70){
+                if(parachutist.isParachute() && Math.round(parachutist.getOffsetFromTop()) === SEA_HEIGHT - 10){
                     if(Math.abs(this.boat.getOffsetFromLeft() - parachutist.getOffsetFromLeft()) < 30){
                         this.player.incrementScore();
+                        parachutist.disappear();
                     } else {
                         this.player.die();
                     }
                 }
             }, 100);
+
+            this.intervals = [
+                ...this.intervals,
+                interval
+            ];
 
             if(!parachutist.isParachute()){
                 clearInterval(interval);
@@ -119,7 +134,8 @@ class App extends Component {
     gameOver = () => {
         this.intervals.forEach(interval => clearInterval(interval));
 
-        console.log(`Game over! score is ${this.player.getScore()}`);
+        window.removeEventListener('keydown', this.onKeyDown);
+        window.removeEventListener('mousemove', this.onMouseOver);
     };
 
     loadImage = ({

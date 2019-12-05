@@ -1,3 +1,5 @@
+import  {MAX_LEFT } from '../components/constants';
+
 class Plane {
     #imgSrc = require('../data/pictures/plane.png');
     #offsetFromLeft = 299;
@@ -6,8 +8,7 @@ class Plane {
     #height = 15;
 
     #finished = false;
-    #parachutistOffsetFromLeft = Math.random() * 299;
-    #droppedParachutist = false;
+    #parachutistOffsetFromLeft = Math.random() * MAX_LEFT;
 
     isFinished = () => this.#finished;
 
@@ -19,7 +20,7 @@ class Plane {
         }
     };
 
-    isDroppedParachutist = () => this.#droppedParachutist;
+    getOffsetFromLeft = () => this.#offsetFromLeft;
 
     getParachutistOffsetFromLeft = () => this.#parachutistOffsetFromLeft;
 

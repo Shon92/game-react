@@ -1,3 +1,5 @@
+import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../components/constants';
+
 class Player {
     #lives = 3;
     #score = 0;
@@ -10,12 +12,10 @@ class Player {
         this.#score += 10;
     };
 
-    getScore = () => this.#score;
-
     getLives = () => this.#lives;
 
     render = (fillText, context) => {
-        context.clearRect(0, 0, 1000, 300);
+        context.clearRect(0, 0, SCREEN_HEIGHT, SCREEN_WIDTH);
 
         if(this.#lives > 0){
             fillText(`lives: ${this.#lives}`, 10);

@@ -1,3 +1,5 @@
+import { MAX_LEFT, SEA_HEIGHT } from '../components/constants';
+
 class Parachutist {
     #imgSrc = require('../data/pictures/parachutist.png');
     #offsetFromLeft;
@@ -7,12 +9,12 @@ class Parachutist {
 
     #isParachute = true;
 
-    constructor(offsetFromLeft = 275){
-        this.offsetFromLeft = offsetFromLeft;
+    constructor(offsetFromLeft = MAX_LEFT){
+        this.#offsetFromLeft = offsetFromLeft;
     }
 
     updateLocations = () => {
-        if(this.#offsetFromTop < 70){
+        if(this.#offsetFromTop < SEA_HEIGHT + 10){
             this.#offsetFromTop++;
         } else {
             this.#isParachute = false;
@@ -25,7 +27,9 @@ class Parachutist {
 
     getOffsetFromLeft = () => this.#offsetFromLeft;
 
-    render(context, loadImage){
+    disappear = () => this.#isParachute = false;
+
+    render(loadImage){
         if(this.#isParachute){
             const obj = {
                 img: this.#imgSrc,
