@@ -1,0 +1,11 @@
+.container {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+
+    canvas {
+        width: 1000px;
+        height: 300px;
+        border: 1px solid gray;
+    }
+}
